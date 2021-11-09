@@ -12,9 +12,9 @@ class Line {
   /// A unique identifier for this line.
   ///
   /// The identifier is an arbitrary unique string.
-  final String? _id;
+  final String _id;
 
-  String? get id => _id;
+  String get id => _id;
 
   final Map? _data;
 
@@ -63,10 +63,7 @@ class LineOptions {
 
   static const LineOptions defaultOptions = LineOptions();
 
-  LineOptions copyWith(LineOptions? changes) {
-    if (changes == null) {
-      return this;
-    }
+  LineOptions copyWith(LineOptions changes) {
     return LineOptions(
       lineJoin: changes.lineJoin ?? lineJoin,
       lineOpacity: changes.lineOpacity ?? lineOpacity,

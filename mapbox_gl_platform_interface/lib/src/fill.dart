@@ -27,8 +27,8 @@ class Fill {
   /// A unique identifier for this fill.
   ///
   /// The identifier is an arbitrary unique string.
-  final String? _id;
-  String? get id => _id;
+  final String _id;
+  String get id => _id;
 
   final Map? _data;
   Map? get data => _data;
@@ -62,10 +62,7 @@ class FillOptions {
 
   static const FillOptions defaultOptions = FillOptions();
 
-  FillOptions copyWith(FillOptions? changes) {
-    if (changes == null) {
-      return this;
-    }
+  FillOptions copyWith(FillOptions changes) {
     return FillOptions(
       fillOpacity: changes.fillOpacity ?? fillOpacity,
       fillColor: changes.fillColor ?? fillColor,
