@@ -34,9 +34,9 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   static final LatLng center = const LatLng(-33.86711, 151.1947171);
   final String _fillPatternImage = "assets/fill/cat_silhouette_pattern.png";
 
-  MapboxMapController controller;
+  MapboxMapController? controller;
   int _fillCount = 0;
-  Fill _selectedFill;
+  Fill? _selectedFill;
 
   void _onMapCreated(MapboxMapController controller) {
     this.controller = controller;
@@ -51,12 +51,12 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   Future<void> addImageFromAsset(String name, String assetName) async {
     final ByteData bytes = await rootBundle.load(assetName);
     final Uint8List list = bytes.buffer.asUint8List();
-    return controller.addImage(name, list);
+    return controller!.addImage(name, list);
   }
 
   @override
   void dispose() {
-    controller?.onFillTapped?.remove(_onFillTapped);
+    controller?.onFillTapped.remove(_onFillTapped);
     super.dispose();
   }
 
@@ -67,23 +67,24 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   }
 
   void _updateSelectedFill(FillOptions changes) {
-    controller.updateFill(_selectedFill, changes);
+    controller!.updateFill(_selectedFill!, changes);
   }
 
   void _add() {
-    controller.addFill(
+    controller!.addFill(
       FillOptions(geometry: [
         [
-          LatLng(-32.81711, 151.1447171),
-          LatLng(-32.81711, 152.2447171),
-          LatLng(-33.91711, 152.2447171),
-          LatLng(-33.91711, 151.1447171),
+          LatLng(-33.719, 151.150),
+          LatLng(-33.858, 151.150),
+          LatLng(-33.866, 151.401),
+          LatLng(-33.747, 151.328),
+          LatLng(-33.719, 151.150),
         ],
         [
-          LatLng(-32.86711, 152.1947171),
-          LatLng(-33.86711, 151.1947171),
-          LatLng(-32.86711, 151.1947171),
-          LatLng(-33.86711, 152.1947171),
+          LatLng(-33.762, 151.250),
+          LatLng(-33.827, 151.250),
+          LatLng(-33.833, 151.347),
+          LatLng(-33.762, 151.250),
         ]
       ], fillColor: "#FF0000", fillOutlineColor: "#FF0000"),
     );
@@ -93,7 +94,7 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   }
 
   void _remove() {
-    controller.removeFill(_selectedFill);
+    controller!.removeFill(_selectedFill!);
     setState(() {
       _selectedFill = null;
       _fillCount -= 1;
@@ -105,7 +106,7 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   }
 
   void _changeDraggable() {
-    bool draggable = _selectedFill.options.draggable;
+    bool? draggable = _selectedFill!.options.draggable;
     if (draggable == null) {
       // default value
       draggable = false;
@@ -116,7 +117,7 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   }
 
   Future<void> _changeFillOpacity() async {
-    double current = _selectedFill.options.fillOpacity;
+    double? current = _selectedFill!.options.fillOpacity;
     if (current == null) {
       // default value
       current = 1.0;
@@ -128,7 +129,7 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   }
 
   Future<void> _changeFillColor() async {
-    String current = _selectedFill.options.fillColor;
+    String? current = _selectedFill!.options.fillColor;
     if (current == null) {
       // default value
       current = "#FF0000";
@@ -140,7 +141,7 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   }
 
   Future<void> _changeFillOutlineColor() async {
-    String current = _selectedFill.options.fillOutlineColor;
+    String? current = _selectedFill!.options.fillOutlineColor;
     if (current == null) {
       // default value
       current = "#FF0000";
@@ -152,7 +153,8 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
   }
 
   Future<void> _changeFillPattern() async {
-    String current = _selectedFill.options.fillPattern == null ? "assetImage" : null;
+    String? current =
+        _selectedFill!.options.fillPattern == null ? "assetImage" : null;
     _updateSelectedFill(
       FillOptions(fillPattern: current),
     );
@@ -188,11 +190,11 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
                   children: <Widget>[
                     Column(
                       children: <Widget>[
-                        FlatButton(
+                        TextButton(
                           child: const Text('add'),
                           onPressed: (_fillCount == 12) ? null : _add,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('remove'),
                           onPressed: (_selectedFill == null) ? null : _remove,
                         ),
@@ -200,29 +202,38 @@ class PlaceFillBodyState extends State<PlaceFillBody> {
                     ),
                     Column(
                       children: <Widget>[
-                        FlatButton(
+                        TextButton(
                           child: const Text('change fill-opacity'),
-                          onPressed: (_selectedFill == null) ? null : _changeFillOpacity,
+                          onPressed: (_selectedFill == null)
+                              ? null
+                              : _changeFillOpacity,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('change fill-color'),
-                          onPressed: (_selectedFill == null) ? null : _changeFillColor,
+                          onPressed:
+                              (_selectedFill == null) ? null : _changeFillColor,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('change fill-outline-color'),
-                          onPressed: (_selectedFill == null) ? null : _changeFillOutlineColor,
+                          onPressed: (_selectedFill == null)
+                              ? null
+                              : _changeFillOutlineColor,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('change fill-pattern'),
-                          onPressed: (_selectedFill == null) ? null : _changeFillPattern,
+                          onPressed: (_selectedFill == null)
+                              ? null
+                              : _changeFillPattern,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('change position'),
-                          onPressed: (_selectedFill == null) ? null : _changePosition,
+                          onPressed:
+                              (_selectedFill == null) ? null : _changePosition,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('toggle draggable'),
-                          onPressed: (_selectedFill == null) ? null : _changeDraggable,
+                          onPressed:
+                              (_selectedFill == null) ? null : _changeDraggable,
                         ),
                       ],
                     ),

@@ -31,9 +31,9 @@ class LineBodyState extends State<LineBody> {
 
   static final LatLng center = const LatLng(-33.86711, 151.1947171);
 
-  MapboxMapController controller;
+  MapboxMapController? controller;
   int _lineCount = 0;
-  Line _selectedLine;
+  Line? _selectedLine;
 
   void _onMapCreated(MapboxMapController controller) {
     this.controller = controller;
@@ -42,7 +42,7 @@ class LineBodyState extends State<LineBody> {
 
   @override
   void dispose() {
-    controller?.onLineTapped?.remove(_onLineTapped);
+    controller?.onLineTapped.remove(_onLineTapped);
     super.dispose();
   }
 
@@ -65,17 +65,22 @@ class LineBodyState extends State<LineBody> {
   }
 
   void _updateSelectedLine(LineOptions changes) {
-    controller.updateLine(_selectedLine, changes);
+    controller!.updateLine(_selectedLine!, changes);
   }
 
   void _add() {
-    controller.addLine(
-      LineOptions(geometry: [
-        LatLng(-33.86711, 151.1947171),
-        LatLng(-33.86711, 151.1947171),
-        LatLng(-32.86711, 151.1947171),
-        LatLng(-33.86711, 152.1947171),
-      ], lineColor: "#ff0000", lineWidth: 14.0, lineOpacity: 0.5, draggable: true),
+    controller!.addLine(
+      LineOptions(
+          geometry: [
+            LatLng(-33.86711, 151.1947171),
+            LatLng(-33.86711, 151.1947171),
+            LatLng(-32.86711, 151.1947171),
+            LatLng(-33.86711, 152.1947171),
+          ],
+          lineColor: "#ff0000",
+          lineWidth: 14.0,
+          lineOpacity: 0.5,
+          draggable: true),
     );
     setState(() {
       _lineCount += 1;
@@ -83,7 +88,7 @@ class LineBodyState extends State<LineBody> {
   }
 
   void _remove() {
-    controller.removeLine(_selectedLine);
+    controller!.removeLine(_selectedLine!);
     setState(() {
       _selectedLine = null;
       _lineCount -= 1;
@@ -91,7 +96,7 @@ class LineBodyState extends State<LineBody> {
   }
 
   Future<void> _changeAlpha() async {
-    double current = _selectedLine.options.lineOpacity;
+    double? current = _selectedLine!.options.lineOpacity;
     if (current == null) {
       // default value
       current = 1.0;
@@ -103,7 +108,7 @@ class LineBodyState extends State<LineBody> {
   }
 
   Future<void> _toggleVisible() async {
-    double current = _selectedLine.options.lineOpacity;
+    double? current = _selectedLine!.options.lineOpacity;
     if (current == null) {
       // default value
       current = 1.0;
@@ -114,7 +119,7 @@ class LineBodyState extends State<LineBody> {
   }
 
   void onStyleLoadedCallback() {
-    controller.addLine(
+    controller!.addLine(
       LineOptions(
         geometry: [LatLng(37.4220, -122.0841), LatLng(37.4240, -122.0941)],
         lineColor: "#ff0000",
@@ -154,11 +159,11 @@ class LineBodyState extends State<LineBody> {
                   children: <Widget>[
                     Column(
                       children: <Widget>[
-                        FlatButton(
+                        TextButton(
                           child: const Text('add'),
                           onPressed: (_lineCount == 12) ? null : _add,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('remove'),
                           onPressed: (_selectedLine == null) ? null : _remove,
                         ),
@@ -166,20 +171,23 @@ class LineBodyState extends State<LineBody> {
                     ),
                     Column(
                       children: <Widget>[
-                        FlatButton(
+                        TextButton(
                           child: const Text('change alpha'),
-                          onPressed: (_selectedLine == null) ? null : _changeAlpha,
+                          onPressed:
+                              (_selectedLine == null) ? null : _changeAlpha,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('toggle visible'),
-                          onPressed: (_selectedLine == null) ? null : _toggleVisible,
+                          onPressed:
+                              (_selectedLine == null) ? null : _toggleVisible,
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text('print current LatLng'),
                           onPressed: (_selectedLine == null)
                               ? null
                               : () async {
-                                  var latLngs = await controller.getLineLatLngs(_selectedLine);
+                                  var latLngs = await controller!
+                                      .getLineLatLngs(_selectedLine!);
                                   for (var latLng in latLngs) {
                                     print(latLng.toString());
                                   }
