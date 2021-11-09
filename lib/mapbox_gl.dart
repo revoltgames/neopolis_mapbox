@@ -5,6 +5,7 @@
 library mapbox_gl;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -32,6 +33,7 @@ export 'package:mapbox_gl_platform_interface/mapbox_gl_platform_interface.dart'
         MyLocationTrackingMode,
         MyLocationRenderMode,
         CompassViewPosition,
+        AttributionButtonPosition,
         Circle,
         CircleOptions,
         Line,
@@ -39,8 +41,10 @@ export 'package:mapbox_gl_platform_interface/mapbox_gl_platform_interface.dart'
         Fill,
         FillOptions,
         NeoRanges, // Custom
-        NeoRangeOptions; // Custom
+        NeoRangeOptions; // Custom;
 
 part 'src/controller.dart';
+part 'src/download_region_status.dart';
 part 'src/global.dart';
 part 'src/mapbox_map.dart';
+part 'src/offline_region.dart';
