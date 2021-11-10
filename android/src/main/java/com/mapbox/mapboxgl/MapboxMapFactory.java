@@ -30,7 +30,7 @@ public class MapboxMapFactory extends PlatformViewFactory {
     Map<String, Object> params = (Map<String, Object>) args;
     final MapboxMapBuilder builder = new MapboxMapBuilder();
 
-    Convert.interpretMapboxMapOptions(params.get("options"), builder);
+    Convert.interpretMapboxMapOptions(params.get("options"), builder, context);
     if (params.containsKey("initialCameraPosition")) {
       CameraPosition position = Convert.toCameraPosition(params.get("initialCameraPosition"));
       builder.setInitialCameraPosition(position);
@@ -38,6 +38,10 @@ public class MapboxMapFactory extends PlatformViewFactory {
     if (params.containsKey("annotationOrder")) {
       List<String> annotations = Convert.toAnnotationOrder(params.get("annotationOrder"));
       builder.setAnnotationOrder(annotations);
+    }
+    if (params.containsKey("annotationConsumeTapEvents")) {
+      List<String> annotations = Convert.toAnnotationConsumeTapEvents(params.get("annotationConsumeTapEvents"));
+      builder.setAnnotationConsumeTapEvents(annotations);
     }
     return builder.build(id, context, messenger, lifecycleProvider, (String) params.get("accessToken"));
   }

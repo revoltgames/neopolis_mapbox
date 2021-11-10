@@ -2,6 +2,8 @@
 
 part of mapbox_gl_platform_interface;
 
+typedef OnPlatformViewCreatedCallback = void Function(int);
+
 abstract class MapboxGlPlatform {
   /// The default instance of [MapboxGlPlatform] to use.
   ///
@@ -11,54 +13,45 @@ abstract class MapboxGlPlatform {
   /// class that extends [MapboxGlPlatform] when they register themselves.
   static MapboxGlPlatform Function() createInstance = () => MethodChannelMapboxGl();
 
-  static Map<int, MapboxGlPlatform> _instances = {};
+  final onInfoWindowTappedPlatform = ArgumentCallbacks<String>();
 
-  static void addInstance(int id, MapboxGlPlatform platform) {
-    _instances[id] = platform;
-  }
+  final onSymbolTappedPlatform = ArgumentCallbacks<String>();
 
-  static MapboxGlPlatform getInstance(int id) {
-    if (_instances[id] == null) throw Exception('MapboxGlPlatform instance does not exist : $id');
-    return _instances[id]!;
-  }
+  final onLineTappedPlatform = ArgumentCallbacks<String>();
 
-  final ArgumentCallbacks<String> onInfoWindowTappedPlatform = ArgumentCallbacks<String>();
+  final onCircleTappedPlatform = ArgumentCallbacks<String>();
 
-  final ArgumentCallbacks<String> onSymbolTappedPlatform = ArgumentCallbacks<String>();
+  final onFillTappedPlatform = ArgumentCallbacks<String>();
 
-  final ArgumentCallbacks<String> onLineTappedPlatform = ArgumentCallbacks<String>();
+  final onCameraMoveStartedPlatform = ArgumentCallbacks<void>();
 
-  final ArgumentCallbacks<String> onCircleTappedPlatform = ArgumentCallbacks<String>();
+  final onCameraMovePlatform = ArgumentCallbacks<CameraPosition>();
 
-  final ArgumentCallbacks<String> onFillTappedPlatform = ArgumentCallbacks<String>();
+  final onCameraIdlePlatform = ArgumentCallbacks<CameraPosition?>();
 
-  final ArgumentCallbacks<void> onCameraMoveStartedPlatform = ArgumentCallbacks<void>();
+  final onMapStyleLoadedPlatform = ArgumentCallbacks<void>();
 
-  final ArgumentCallbacks<CameraPosition> onCameraMovePlatform = ArgumentCallbacks<CameraPosition>();
+  final onMapClickPlatform = ArgumentCallbacks<Map<String, dynamic>>();
 
-  final ArgumentCallbacks<CameraPosition> onCameraIdlePlatform = ArgumentCallbacks<CameraPosition>();
+  final onMapLongClickPlatform = ArgumentCallbacks<Map<String, dynamic>>();
 
-  final ArgumentCallbacks<void> onMapStyleLoadedPlatform = ArgumentCallbacks<void>();
-
-  final ArgumentCallbacks<Map<String, dynamic>> onMapClickPlatform = ArgumentCallbacks<Map<String, dynamic>>();
-
-  final ArgumentCallbacks<Map<String, dynamic>> onMapLongClickPlatform = ArgumentCallbacks<Map<String, dynamic>>();
+  final ArgumentCallbacks<void> onAttributionClickPlatform = ArgumentCallbacks<void>();
 
   final ArgumentCallbacks<MyLocationTrackingMode> onCameraTrackingChangedPlatform =
       ArgumentCallbacks<MyLocationTrackingMode>();
 
-  final ArgumentCallbacks<void> onCameraTrackingDismissedPlatform = ArgumentCallbacks<void>();
+  final onCameraTrackingDismissedPlatform = ArgumentCallbacks<void>();
 
-  final ArgumentCallbacks<void> onMapIdlePlatform = ArgumentCallbacks<void>();
+  final onMapIdlePlatform = ArgumentCallbacks<void>();
 
-  final ArgumentCallbacks<UserLocation> onUserLocationUpdatedPlatform = ArgumentCallbacks<UserLocation>();
+  final onUserLocationUpdatedPlatform = ArgumentCallbacks<UserLocation>();
 
   Future<void> initPlatform(int id) async {
     throw UnimplementedError('initPlatform() has not been implemented.');
   }
 
-  Widget buildView(Map<String, dynamic> creationParams, Function onPlatformViewCreated,
-      Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers) {
+  Widget buildView(Map<String, dynamic> creationParams, OnPlatformViewCreatedCallback onPlatformViewCreated,
+      Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers) {
     throw UnimplementedError('buildView() has not been implemented.');
   }
 
@@ -94,7 +87,7 @@ abstract class MapboxGlPlatform {
     throw UnimplementedError('setTelemetryEnabled() has not been implemented.');
   }
 
-  Future<bool?> getTelemetryEnabled() async {
+  Future<bool> getTelemetryEnabled() async {
     throw UnimplementedError('getTelemetryEnabled() has not been implemented.');
   }
 
@@ -114,6 +107,10 @@ abstract class MapboxGlPlatform {
     throw UnimplementedError('addLine() has not been implemented.');
   }
 
+  Future<List<Line>> addLines(List<LineOptions> options, [List<Map>? data]) async {
+    throw UnimplementedError('addLines() has not been implemented.');
+  }
+
   Future<void> updateLine(Line line, LineOptions changes) async {
     throw UnimplementedError('updateLine() has not been implemented.');
   }
@@ -122,8 +119,16 @@ abstract class MapboxGlPlatform {
     throw UnimplementedError('removeLine() has not been implemented.');
   }
 
+  Future<void> removeLines(Iterable<String> ids) async {
+    throw UnimplementedError('removeLines() has not been implemented.');
+  }
+
   Future<Circle> addCircle(CircleOptions options, [Map? data]) async {
     throw UnimplementedError('addCircle() has not been implemented.');
+  }
+
+  Future<List<Circle>> addCircles(List<CircleOptions> options, [List<Map>? data]) async {
+    throw UnimplementedError('addCircles() has not been implemented.');
   }
 
   Future<void> updateCircle(Circle circle, CircleOptions changes) async {
@@ -146,8 +151,16 @@ abstract class MapboxGlPlatform {
     throw UnimplementedError('removeCircle() has not been implemented.');
   }
 
+  Future<void> removeCircles(Iterable<String> ids) async {
+    throw UnimplementedError('removeCircles() has not been implemented.');
+  }
+
   Future<Fill> addFill(FillOptions options, [Map? data]) async {
     throw UnimplementedError('addFill() has not been implemented.');
+  }
+
+  Future<List<Fill>> addFills(List<FillOptions> options, [List<Map>? data]) async {
+    throw UnimplementedError('addFills() has not been implemented.');
   }
 
   Future<void> updateFill(Fill fill, FillOptions changes) async {
@@ -158,11 +171,15 @@ abstract class MapboxGlPlatform {
     throw UnimplementedError('removeFill() has not been implemented.');
   }
 
-  Future<List?> queryRenderedFeatures(Point<double> point, List<String> layerIds, List<Object> filter) async {
+  Future<void> removeFills(Iterable<String> fillIds) async {
+    throw UnimplementedError('removeFills() has not been implemented.');
+  }
+
+  Future<List> queryRenderedFeatures(Point<double> point, List<String> layerIds, List<Object>? filter) async {
     throw UnimplementedError('queryRenderedFeatures() has not been implemented.');
   }
 
-  Future<List?> queryRenderedFeaturesInRect(Rect rect, List<String> layerIds, String filter) async {
+  Future<List> queryRenderedFeaturesInRect(Rect rect, List<String> layerIds, String? filter) async {
     throw UnimplementedError('queryRenderedFeaturesInRect() has not been implemented.');
   }
 
@@ -170,7 +187,7 @@ abstract class MapboxGlPlatform {
     throw UnimplementedError('invalidateAmbientCache() has not been implemented.');
   }
 
-  Future<LatLng> requestMyLocationLatLng() async {
+  Future<LatLng?> requestMyLocationLatLng() async {
     throw UnimplementedError('requestMyLocationLatLng() has not been implemented.');
   }
 
@@ -222,11 +239,15 @@ abstract class MapboxGlPlatform {
     throw UnimplementedError('toScreenLocation() has not been implemented.');
   }
 
+  Future<List<Point>> toScreenLocationBatch(Iterable<LatLng> latLngs) async {
+    throw UnimplementedError('toScreenLocationList() has not been implemented.');
+  }
+
   Future<LatLng> toLatLng(Point screenLocation) async {
     throw UnimplementedError('toLatLng() has not been implemented.');
   }
 
-  Future<double?> getMetersPerPixelAtLatitude(double latitude) async {
+  Future<double> getMetersPerPixelAtLatitude(double latitude) async {
     throw UnimplementedError('getMetersPerPixelAtLatitude() has not been implemented.');
   }
 

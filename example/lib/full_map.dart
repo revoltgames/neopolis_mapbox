@@ -21,7 +21,7 @@ class FullMap extends StatefulWidget {
 }
 
 class FullMapState extends State<FullMap> {
-  MapboxMapController mapController;
+  MapboxMapController? mapController;
 
   void _onMapCreated(MapboxMapController controller) {
     mapController = controller;
@@ -34,6 +34,9 @@ class FullMapState extends State<FullMap> {
       accessToken: MapsDemo.ACCESS_TOKEN,
       onMapCreated: _onMapCreated,
       initialCameraPosition: const CameraPosition(target: LatLng(0.0, 0.0)),
+      onStyleLoadedCallback: onStyleLoadedCallback,
     ));
   }
+
+  void onStyleLoadedCallback() {}
 }

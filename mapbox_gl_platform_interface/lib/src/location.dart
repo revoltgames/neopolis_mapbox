@@ -35,10 +35,7 @@ class LatLng {
     return <double>[latitude, longitude];
   }
 
-  static LatLng? _fromJson(dynamic json) {
-    if (json == null) {
-      return null;
-    }
+  static LatLng _fromJson(List<dynamic> json) {
     return LatLng(json[0], json[1]);
   }
 
@@ -81,12 +78,12 @@ class LatLngBounds {
 
   @visibleForTesting
   static LatLngBounds? fromList(dynamic json) {
-    if (json == null || json[0] == null || json[1] == null) {
+    if (json == null) {
       return null;
     }
     return LatLngBounds(
-      southwest: LatLng._fromJson(json[0])!,
-      northeast: LatLng._fromJson(json[1])!,
+      southwest: LatLng._fromJson(json[0]),
+      northeast: LatLng._fromJson(json[1]),
     );
   }
 
@@ -107,8 +104,12 @@ class LatLngBounds {
 /// A geographical area representing a non-aligned quadrilateral
 /// This class does not wrap values to the world bounds
 class LatLngQuad {
-  const LatLngQuad(
-      {required this.topLeft, required this.topRight, required this.bottomRight, required this.bottomLeft});
+  const LatLngQuad({
+    required this.topLeft,
+    required this.topRight,
+    required this.bottomRight,
+    required this.bottomLeft,
+  });
 
   final LatLng topLeft;
 
@@ -124,14 +125,14 @@ class LatLngQuad {
 
   @visibleForTesting
   static LatLngQuad? fromList(dynamic json) {
-    if (json == null || json[0] == null || json[1] == null || json[2] == null || json[3] == null) {
+    if (json == null) {
       return null;
     }
     return LatLngQuad(
-      topLeft: LatLng._fromJson(json[0])!,
-      topRight: LatLng._fromJson(json[1])!,
-      bottomRight: LatLng._fromJson(json[2])!,
-      bottomLeft: LatLng._fromJson(json[3])!,
+      topLeft: LatLng._fromJson(json[0]),
+      topRight: LatLng._fromJson(json[1]),
+      bottomRight: LatLng._fromJson(json[2]),
+      bottomLeft: LatLng._fromJson(json[3]),
     );
   }
 

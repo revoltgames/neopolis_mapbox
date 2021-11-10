@@ -9,8 +9,8 @@ part of mapbox_gl_platform_interface;
 /// location, its [zoom] level, [tilt] angle, and [bearing].
 class CameraPosition {
   const CameraPosition({
-    required this.target,
     this.bearing = 0.0,
+    required this.target,
     this.tilt = 0.0,
     this.zoom = 0.0,
   });
@@ -57,12 +57,12 @@ class CameraPosition {
 
   @visibleForTesting
   static CameraPosition? fromMap(dynamic json) {
-    if (json == null || json['target'] == null) {
+    if (json == null) {
       return null;
     }
     return CameraPosition(
-      target: LatLng._fromJson(json['target'])!,
       bearing: json['bearing'],
+      target: LatLng._fromJson(json['target']),
       tilt: json['tilt'],
       zoom: json['zoom'],
     );

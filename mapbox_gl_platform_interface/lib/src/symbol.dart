@@ -105,10 +105,7 @@ class SymbolOptions {
 
   static const SymbolOptions defaultOptions = SymbolOptions();
 
-  SymbolOptions copyWith(SymbolOptions? changes) {
-    if (changes == null) {
-      return this;
-    }
+  SymbolOptions copyWith(SymbolOptions changes) {
     return SymbolOptions(
       iconSize: changes.iconSize ?? iconSize,
       iconImage: changes.iconImage ?? iconImage,

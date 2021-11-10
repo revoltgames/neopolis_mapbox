@@ -15,7 +15,7 @@ class MapboxMap extends StatefulWidget {
     this.accessToken,
     this.onMapCreated,
     this.onStyleLoadedCallback,
-    this.gestureRecognizers = const {},
+    this.gestureRecognizers,
     this.compassEnabled = true,
     this.cameraTargetBounds = CameraTargetBounds.unbounded,
     this.styleString,
@@ -31,10 +31,12 @@ class MapboxMap extends StatefulWidget {
     this.logoViewMargins,
     this.compassViewPosition,
     this.compassViewMargins,
+    this.attributionButtonPosition,
     this.attributionButtonMargins,
     this.onMapClick,
     this.onUserLocationUpdated,
     this.onMapLongClick,
+    this.onAttributionClick,
     this.onCameraTrackingDismissed,
     this.onCameraTrackingChanged,
     this.onCameraIdle,
@@ -45,12 +47,23 @@ class MapboxMap extends StatefulWidget {
       AnnotationType.circle,
       AnnotationType.fill,
     ],
+    this.annotationConsumeTapEvents = const [
+      AnnotationType.symbol,
+      AnnotationType.fill,
+      AnnotationType.line,
+      AnnotationType.circle,
+    ],
   })  : assert(annotationOrder.length == 4),
+        assert(annotationConsumeTapEvents.length > 0),
         super(key: key);
 
   /// Defined the layer order of annotations displayed on map
   /// (must contain all annotation types, 4 items)
   final List<AnnotationType> annotationOrder;
+
+  /// Defined the layer order of click annotations
+  /// (must contain at least 1 annotation type, 4 items max)
+  final List<AnnotationType> annotationConsumeTapEvents;
 
   /// If you want to use Mapbox hosted styles and map tiles, you need to provide a Mapbox access token.
   /// Obtain a free access token on [your Mapbox account page](https://www.mapbox.com/account/access-tokens/).
@@ -144,7 +157,13 @@ class MapboxMap extends StatefulWidget {
   /// Set the layout margins for the Mapbox Compass
   final Point? compassViewMargins;
 
-  /// Set the layout margins for the Mapbox Attribution Buttons
+  /// Set the position for the Mapbox Attribution Button
+  final AttributionButtonPosition? attributionButtonPosition;
+
+  /// Set the layout margins for the Mapbox Attribution Buttons. If you set this
+  /// value, you may also want to set [attributionButtonPosition] to harmonize
+  /// the layout between iOS and Android, since the underlying frameworks have
+  /// different defaults.
   final Point? attributionButtonMargins;
 
   /// Which gestures should be consumed by the map.
@@ -156,10 +175,12 @@ class MapboxMap extends StatefulWidget {
   ///
   /// When this set is empty or null, the map will only handle pointer events for gestures that
   /// were not claimed by any other gesture recognizer.
-  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   final OnMapClickCallback? onMapClick;
   final OnMapClickCallback? onMapLongClick;
+
+  final OnAttributionClickCallback? onAttributionClick;
 
   /// While the `myLocationEnabled` property is set to `true`, this method is
   /// called whenever a new location update is received by the map view.
@@ -195,12 +216,15 @@ class _MapboxMapState extends State<MapboxMap> {
   @override
   Widget build(BuildContext context) {
     final List<String> annotationOrder = widget.annotationOrder.map((e) => e.toString()).toList();
+    final List<String> annotationConsumeTapEvents = widget.annotationConsumeTapEvents.map((e) => e.toString()).toList();
 
     final Map<String, dynamic> creationParams = <String, dynamic>{
       'initialCameraPosition': widget.initialCameraPosition.toMap(),
       'options': _MapboxMapOptions.fromWidget(widget).toMap(),
       'accessToken': widget.accessToken,
       'annotationOrder': annotationOrder,
+      'annotationConsumeTapEvents': annotationConsumeTapEvents,
+      'onAttributionClickOverride': widget.onAttributionClick != null,
     };
     return _mapboxGlPlatform.buildView(creationParams, onPlatformViewCreated, widget.gestureRecognizers);
   }
@@ -229,29 +253,26 @@ class _MapboxMapState extends State<MapboxMap> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    MapboxGlPlatform.addInstance(id, _mapboxGlPlatform);
-    final MapboxMapController controller = MapboxMapController.init(id, widget.initialCameraPosition,
-        onStyleLoadedCallback: () {
-      if (_controller.isCompleted) {
-        if (widget.onStyleLoadedCallback != null) {
-          widget.onStyleLoadedCallback!();
-        }
-      } else {
+    final MapboxMapController controller = MapboxMapController(
+      mapboxGlPlatform: _mapboxGlPlatform,
+      initialCameraPosition: widget.initialCameraPosition,
+      onStyleLoadedCallback: () {
         _controller.future.then((_) {
           if (widget.onStyleLoadedCallback != null) {
             widget.onStyleLoadedCallback!();
           }
         });
-      }
-    },
-        onMapClick: widget.onMapClick,
-        onUserLocationUpdated: widget.onUserLocationUpdated,
-        onMapLongClick: widget.onMapLongClick,
-        onCameraTrackingDismissed: widget.onCameraTrackingDismissed,
-        onCameraTrackingChanged: widget.onCameraTrackingChanged,
-        onCameraIdle: widget.onCameraIdle,
-        onMapIdle: widget.onMapIdle);
-    await MapboxMapController.initPlatform(id);
+      },
+      onMapClick: widget.onMapClick,
+      onUserLocationUpdated: widget.onUserLocationUpdated,
+      onMapLongClick: widget.onMapLongClick,
+      onAttributionClick: widget.onAttributionClick,
+      onCameraTrackingDismissed: widget.onCameraTrackingDismissed,
+      onCameraTrackingChanged: widget.onCameraTrackingChanged,
+      onCameraIdle: widget.onCameraIdle,
+      onMapIdle: widget.onMapIdle,
+    );
+    await _mapboxGlPlatform.initPlatform(id);
     _controller.complete(controller);
     if (widget.onMapCreated != null) {
       widget.onMapCreated!(controller);
@@ -280,6 +301,7 @@ class _MapboxMapOptions {
     this.logoViewMargins,
     this.compassViewPosition,
     this.compassViewMargins,
+    this.attributionButtonPosition,
     this.attributionButtonMargins,
   });
 
@@ -300,6 +322,7 @@ class _MapboxMapOptions {
       logoViewMargins: map.logoViewMargins,
       compassViewPosition: map.compassViewPosition,
       compassViewMargins: map.compassViewMargins,
+      attributionButtonPosition: map.attributionButtonPosition,
       attributionButtonMargins: map.attributionButtonMargins,
     );
   }
@@ -333,6 +356,8 @@ class _MapboxMapOptions {
   final CompassViewPosition? compassViewPosition;
 
   final Point? compassViewMargins;
+
+  final AttributionButtonPosition? attributionButtonPosition;
 
   final Point? attributionButtonMargins;
 
@@ -368,6 +393,7 @@ class _MapboxMapOptions {
     addIfNonNull('logoViewMargins', pointToArray(logoViewMargins));
     addIfNonNull('compassViewPosition', compassViewPosition?.index);
     addIfNonNull('compassViewMargins', pointToArray(compassViewMargins));
+    addIfNonNull('attributionButtonPosition', attributionButtonPosition?.index);
     addIfNonNull('attributionButtonMargins', pointToArray(attributionButtonMargins));
     return optionsMap;
   }

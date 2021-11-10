@@ -12,8 +12,8 @@ class Circle {
   /// A unique identifier for this circle.
   ///
   /// The identifier is an arbitrary unique string.
-  final String? _id;
-  String? get id => _id;
+  final String _id;
+  String get id => _id;
 
   final Map? _data;
   Map? get data => _data;
@@ -59,10 +59,7 @@ class CircleOptions {
 
   static const CircleOptions defaultOptions = CircleOptions();
 
-  CircleOptions copyWith(CircleOptions? changes) {
-    if (changes == null) {
-      return this;
-    }
+  CircleOptions copyWith(CircleOptions changes) {
     return CircleOptions(
       circleRadius: changes.circleRadius ?? circleRadius,
       circleColor: changes.circleColor ?? circleColor,
