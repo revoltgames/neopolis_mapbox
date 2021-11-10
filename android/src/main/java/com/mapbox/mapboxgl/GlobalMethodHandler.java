@@ -5,8 +5,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.mapbox.mapboxgl.models.OfflineRegionData;
-import android.content.Context;
+import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +21,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -37,20 +37,24 @@ class GlobalMethodHandler implements MethodChannel.MethodCallHandler {
     private FlutterPlugin.FlutterAssets flutterAssets;
     @NonNull
     private final Context context;
+    @NonNull
+    private final BinaryMessenger messenger;
 
     GlobalMethodHandler(@NonNull PluginRegistry.Registrar registrar) {
         this.registrar = registrar;
         this.context = registrar.activeContext();
+        this.messenger = registrar.messenger();
+
     }
 
-    GlobalMethodHandler(@NonNull Context context, @NonNull FlutterPlugin.FlutterAssets assets) {
-        this.context = context;
-        this.flutterAssets = assets;
+    GlobalMethodHandler(@NonNull FlutterPlugin.FlutterPluginBinding binding) {
+        this.context = binding.getApplicationContext();
+        this.flutterAssets = binding.getFlutterAssets();
+        this.messenger = binding.getBinaryMessenger();
     }
 
     @Override
     public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
-        final Context context = registrar.context();
         String accessToken = methodCall.argument("accessToken");
         MapBoxUtils.getMapbox(context, accessToken);
 
@@ -60,26 +64,35 @@ class GlobalMethodHandler implements MethodChannel.MethodCallHandler {
                 installOfflineMapTiles(tilesDb);
                 result.success(null);
                 break;
+            case "setOffline":
+                boolean offline = methodCall.argument("offline");
+                ConnectivityReceiver.instance(context).setConnected(offline ? false : null);
+                result.success(null);
+                break;
             case "mergeOfflineRegions":
                 OfflineManagerUtils.mergeRegions(result, context, methodCall.argument("path"));
                 break;
-
+            case "setOfflineTileCountLimit":
+                OfflineManagerUtils.setOfflineTileCountLimit(result, context, methodCall.<Number>argument("limit").longValue());
+                break;
             case "downloadOfflineRegion":
-                // Get download region arguments from caller
-                OfflineRegionData regionData = new Gson().fromJson(methodCall.argument("region").toString(), OfflineRegionData.class);
-                // Prepare channel
+                // Get args from caller
+                Map<String, Object> definitionMap = (Map<String, Object>) methodCall.argument("definition");
+                Map<String, Object> metadataMap = (Map<String, Object>) methodCall.argument("metadata");
                 String channelName = methodCall.argument("channelName");
-                OfflineChannelHandlerImpl channelHandler = new OfflineChannelHandlerImpl(registrar.messenger(), channelName);
+
+                // Prepare args
+                OfflineChannelHandlerImpl channelHandler = new OfflineChannelHandlerImpl(messenger, channelName);
 
                 // Start downloading
-                OfflineManagerUtils.downloadRegion(result, context, regionData, channelHandler);
+                OfflineManagerUtils.downloadRegion(result, context, definitionMap, metadataMap, channelHandler);
                 break;
             case "getListOfRegions":
                 OfflineManagerUtils.regionsList(result, context);
                 break;
             case "updateOfflineRegionMetadata":
                 // Get download region arguments from caller
-                Map<String, Object> metadata = (Map<String, Object>) methodCall.<Map>argument("metadata");
+                Map<String, Object> metadata = (Map<String, Object>) methodCall.argument("metadata");
                 OfflineManagerUtils.updateRegionMetadata(result, context, methodCall.<Number>argument("id").longValue(), metadata);
                 break;
             case "deleteOfflineRegion":
@@ -113,7 +126,7 @@ class GlobalMethodHandler implements MethodChannel.MethodCallHandler {
             } else {
                 throw new IllegalStateException();
             }
-            return registrar.activeContext().getAssets().open(assetKey);
+            return context.getAssets().open(assetKey);
         }
     }
 
