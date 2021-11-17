@@ -1026,8 +1026,8 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         // Icon scale stops
         let textSizeStops = [
             0:0,
-            15.5:0,
-            15.6:10,
+            17.1:0,
+            17.2:10,
             20:15
         ]
         

@@ -386,8 +386,8 @@ final class MapboxMapController
                     PropertyFactory.textSize(Expression.interpolate(
                             exponential(1.4), zoom(),
                             literal(0.0f), literal(0.0f),
-                            literal(15.5f), literal(0.0f),
-                            literal(15.6f), literal(10),
+                            literal(17.1f), literal(0.0f),
+                            literal(17.2f), literal(10),
                             literal(20.0f), literal(15))),
                     PropertyFactory.textFont(literal(new String[]{"Averta Semibold"}))
             );
