@@ -27,7 +27,8 @@ class ArgumentCallbacks<T> {
     if (length == 1) {
       _callbacks[0].call(argument);
     } else if (0 < length) {
-      for (ArgumentCallback<T> callback in List<ArgumentCallback<T>>.from(_callbacks)) {
+      for (ArgumentCallback<T> callback
+          in List<ArgumentCallback<T>>.from(_callbacks)) {
         callback(argument);
       }
     }
@@ -43,6 +44,11 @@ class ArgumentCallbacks<T> {
   /// Does nothing, if the callback was not present.
   void remove(ArgumentCallback<T> callback) {
     _callbacks.remove(callback);
+  }
+
+  /// Removes all callbacks
+  void clear() {
+    _callbacks.clear();
   }
 
   /// Whether this collection is empty.

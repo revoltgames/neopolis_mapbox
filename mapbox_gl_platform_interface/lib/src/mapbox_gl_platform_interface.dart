@@ -11,17 +11,14 @@ abstract class MapboxGlPlatform {
   ///
   /// Platform-specific plugins should set this with their own platform-specific
   /// class that extends [MapboxGlPlatform] when they register themselves.
-  static MapboxGlPlatform Function() createInstance = () => MethodChannelMapboxGl();
+  static MapboxGlPlatform Function() createInstance =
+      () => MethodChannelMapboxGl();
 
   final onInfoWindowTappedPlatform = ArgumentCallbacks<String>();
 
-  final onSymbolTappedPlatform = ArgumentCallbacks<String>();
+  final onFeatureTappedPlatform = ArgumentCallbacks<Map<String, dynamic>>();
 
-  final onLineTappedPlatform = ArgumentCallbacks<String>();
-
-  final onCircleTappedPlatform = ArgumentCallbacks<String>();
-
-  final onFillTappedPlatform = ArgumentCallbacks<String>();
+  final onFeatureDraggedPlatform = ArgumentCallbacks<Map<String, dynamic>>();
 
   final onCameraMoveStartedPlatform = ArgumentCallbacks<void>();
 
@@ -35,9 +32,11 @@ abstract class MapboxGlPlatform {
 
   final onMapLongClickPlatform = ArgumentCallbacks<Map<String, dynamic>>();
 
-  final ArgumentCallbacks<void> onAttributionClickPlatform = ArgumentCallbacks<void>();
+  final ArgumentCallbacks<void> onAttributionClickPlatform =
+      ArgumentCallbacks<void>();
 
-  final ArgumentCallbacks<MyLocationTrackingMode> onCameraTrackingChangedPlatform =
+  final ArgumentCallbacks<MyLocationTrackingMode>
+      onCameraTrackingChangedPlatform =
       ArgumentCallbacks<MyLocationTrackingMode>();
 
   final onCameraTrackingDismissedPlatform = ArgumentCallbacks<void>();
@@ -46,233 +45,114 @@ abstract class MapboxGlPlatform {
 
   final onUserLocationUpdatedPlatform = ArgumentCallbacks<UserLocation>();
 
-  Future<void> initPlatform(int id) async {
-    throw UnimplementedError('initPlatform() has not been implemented.');
-  }
+  Future<void> initPlatform(int id);
+  Widget buildView(
+      Map<String, dynamic> creationParams,
+      OnPlatformViewCreatedCallback onPlatformViewCreated,
+      Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers);
+  Future<CameraPosition?> updateMapOptions(Map<String, dynamic> optionsUpdate);
+  Future<bool?> animateCamera(CameraUpdate cameraUpdate);
+  Future<bool?> moveCamera(CameraUpdate cameraUpdate);
+  Future<void> updateMyLocationTrackingMode(
+      MyLocationTrackingMode myLocationTrackingMode);
 
-  Widget buildView(Map<String, dynamic> creationParams, OnPlatformViewCreatedCallback onPlatformViewCreated,
-      Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers) {
-    throw UnimplementedError('buildView() has not been implemented.');
-  }
+  Future<void> matchMapLanguageWithDeviceDefault();
 
-  Future<CameraPosition?> updateMapOptions(Map<String, dynamic> optionsUpdate) async {
-    throw UnimplementedError('updateMapOptions() has not been implemented.');
-  }
+  Future<void> updateContentInsets(EdgeInsets insets, bool animated);
+  Future<void> setMapLanguage(String language);
+  Future<void> setTelemetryEnabled(bool enabled);
 
-  Future<bool?> animateCamera(CameraUpdate cameraUpdate) async {
-    throw UnimplementedError('animateCamera() has not been implemented.');
-  }
+  Future<bool> getTelemetryEnabled();
+  Future<List> queryRenderedFeatures(
+      Point<double> point, List<String> layerIds, List<Object>? filter);
 
-  Future<bool?> moveCamera(CameraUpdate cameraUpdate) async {
-    throw UnimplementedError('moveCamera() has not been implemented.');
-  }
+  Future<List> queryRenderedFeaturesInRect(
+      Rect rect, List<String> layerIds, String? filter);
+  Future invalidateAmbientCache();
+  Future<LatLng?> requestMyLocationLatLng();
 
-  Future<void> updateMyLocationTrackingMode(MyLocationTrackingMode myLocationTrackingMode) async {
-    throw UnimplementedError('updateMyLocationTrackingMode() has not been implemented.');
-  }
+  Future<LatLngBounds> getVisibleRegion();
 
-  Future<void> matchMapLanguageWithDeviceDefault() async {
-    throw UnimplementedError('matchMapLanguageWithDeviceDefault() has not been implemented.');
-  }
+  Future<void> addImage(String name, Uint8List bytes, [bool sdf = false]);
 
-  Future<void> updateContentInsets(EdgeInsets insets, bool animated) async {
-    throw UnimplementedError('updateContentInsets() has not been implemented.');
-  }
+  Future<void> addImageSource(
+      String imageSourceId, Uint8List bytes, LatLngQuad coordinates);
 
-  Future<void> setMapLanguage(String language) async {
-    throw UnimplementedError('setMapLanguage() has not been implemented.');
-  }
+  Future<void> addLayer(String imageLayerId, String imageSourceId);
+  Future<void> addLayerBelow(
+      String imageLayerId, String imageSourceId, String belowLayerId);
 
-  Future<void> setTelemetryEnabled(bool enabled) async {
-    throw UnimplementedError('setTelemetryEnabled() has not been implemented.');
-  }
+  Future<void> removeLayer(String imageLayerId);
 
-  Future<bool> getTelemetryEnabled() async {
-    throw UnimplementedError('getTelemetryEnabled() has not been implemented.');
-  }
+  Future<Point> toScreenLocation(LatLng latLng);
 
-  Future<List<Symbol>> addSymbols(List<SymbolOptions> options, [List<Map>? data]) async {
-    throw UnimplementedError('addSymbols() has not been implemented.');
-  }
+  Future<List<Point>> toScreenLocationBatch(Iterable<LatLng> latLngs);
 
-  Future<void> updateSymbol(Symbol symbol, SymbolOptions changes) async {
-    throw UnimplementedError('updateSymbol() has not been implemented.');
-  }
+  Future<LatLng> toLatLng(Point screenLocation);
 
-  Future<void> removeSymbols(Iterable<String> symbolsIds) async {
-    throw UnimplementedError('removeSymbol() has not been implemented.');
-  }
+  Future<double> getMetersPerPixelAtLatitude(double latitude);
 
-  Future<Line> addLine(LineOptions options, [Map? data]) async {
-    throw UnimplementedError('addLine() has not been implemented.');
-  }
+  Future<void> addGeoJsonSource(String sourceId, Map<String, dynamic> geojson,
+      {String? promoteId});
 
-  Future<List<Line>> addLines(List<LineOptions> options, [List<Map>? data]) async {
-    throw UnimplementedError('addLines() has not been implemented.');
-  }
+  Future<void> setGeoJsonSource(String sourceId, Map<String, dynamic> geojson);
 
-  Future<void> updateLine(Line line, LineOptions changes) async {
-    throw UnimplementedError('updateLine() has not been implemented.');
-  }
+  Future<void> setFeatureForGeoJsonSource(
+      String sourceId, Map<String, dynamic> geojsonFeature);
 
-  Future<void> removeLine(String lineId) async {
-    throw UnimplementedError('removeLine() has not been implemented.');
-  }
+  Future<void> removeSource(String sourceId);
 
-  Future<void> removeLines(Iterable<String> ids) async {
-    throw UnimplementedError('removeLines() has not been implemented.');
-  }
+  Future<void> addSymbolLayer(
+      String sourceId, String layerId, Map<String, dynamic> properties,
+      {String? belowLayerId,
+      String? sourceLayer,
+      required bool enableInteraction});
 
-  Future<Circle> addCircle(CircleOptions options, [Map? data]) async {
-    throw UnimplementedError('addCircle() has not been implemented.');
-  }
+  Future<void> addLineLayer(
+      String sourceId, String layerId, Map<String, dynamic> properties,
+      {String? belowLayerId,
+      String? sourceLayer,
+      required bool enableInteraction});
 
-  Future<List<Circle>> addCircles(List<CircleOptions> options, [List<Map>? data]) async {
-    throw UnimplementedError('addCircles() has not been implemented.');
-  }
+  Future<void> addCircleLayer(
+      String sourceId, String layerId, Map<String, dynamic> properties,
+      {String? belowLayerId,
+      String? sourceLayer,
+      required bool enableInteraction});
 
-  Future<void> updateCircle(Circle circle, CircleOptions changes) async {
-    throw UnimplementedError('updateCircle() has not been implemented.');
-  }
+  Future<void> addFillLayer(
+      String sourceId, String layerId, Map<String, dynamic> properties,
+      {String? belowLayerId,
+      String? sourceLayer,
+      required bool enableInteraction});
 
-  Future<LatLng> getCircleLatLng(Circle circle) async {
-    throw UnimplementedError('getCircleLatLng() has not been implemented.');
-  }
+  Future<void> addRasterLayer(
+      String sourceId, String layerId, Map<String, dynamic> properties,
+      {String? belowLayerId, String? sourceLayer});
 
-  Future<LatLng> getSymbolLatLng(Symbol symbol) async {
-    throw UnimplementedError('getSymbolLatLng() has not been implemented.');
-  }
+  Future<void> addHillshadeLayer(
+      String sourceId, String layerId, Map<String, dynamic> properties,
+      {String? belowLayerId, String? sourceLayer});
 
-  Future<List<LatLng>> getLineLatLngs(Line line) async {
-    throw UnimplementedError('getLineLatLngs() has not been implemented.');
-  }
+  Future<void> addSource(String sourceId, SourceProperties properties);
 
-  Future<void> removeCircle(String circleId) async {
-    throw UnimplementedError('removeCircle() has not been implemented.');
-  }
+  @mustCallSuper
+  void dispose() {
+    // clear all callbacks to avoid cyclic refs
+    onInfoWindowTappedPlatform.clear();
+    onFeatureTappedPlatform.clear();
+    onFeatureDraggedPlatform.clear();
+    onCameraMoveStartedPlatform.clear();
+    onCameraMovePlatform.clear();
+    onCameraIdlePlatform.clear();
+    onMapStyleLoadedPlatform.clear();
 
-  Future<void> removeCircles(Iterable<String> ids) async {
-    throw UnimplementedError('removeCircles() has not been implemented.');
-  }
-
-  Future<Fill> addFill(FillOptions options, [Map? data]) async {
-    throw UnimplementedError('addFill() has not been implemented.');
-  }
-
-  Future<List<Fill>> addFills(List<FillOptions> options, [List<Map>? data]) async {
-    throw UnimplementedError('addFills() has not been implemented.');
-  }
-
-  Future<void> updateFill(Fill fill, FillOptions changes) async {
-    throw UnimplementedError('updateFill() has not been implemented.');
-  }
-
-  Future<void> removeFill(String fillId) async {
-    throw UnimplementedError('removeFill() has not been implemented.');
-  }
-
-  Future<void> removeFills(Iterable<String> fillIds) async {
-    throw UnimplementedError('removeFills() has not been implemented.');
-  }
-
-  Future<List> queryRenderedFeatures(Point<double> point, List<String> layerIds, List<Object>? filter) async {
-    throw UnimplementedError('queryRenderedFeatures() has not been implemented.');
-  }
-
-  Future<List> queryRenderedFeaturesInRect(Rect rect, List<String> layerIds, String? filter) async {
-    throw UnimplementedError('queryRenderedFeaturesInRect() has not been implemented.');
-  }
-
-  Future invalidateAmbientCache() async {
-    throw UnimplementedError('invalidateAmbientCache() has not been implemented.');
-  }
-
-  Future<LatLng?> requestMyLocationLatLng() async {
-    throw UnimplementedError('requestMyLocationLatLng() has not been implemented.');
-  }
-
-  Future<LatLngBounds> getVisibleRegion() async {
-    throw UnimplementedError('getVisibleRegion() has not been implemented.');
-  }
-
-  Future<void> addImage(String name, Uint8List bytes, [bool sdf = false]) async {
-    throw UnimplementedError('addImage() has not been implemented.');
-  }
-
-  Future<void> setSymbolIconAllowOverlap(bool enable) async {
-    throw UnimplementedError('setSymbolIconAllowOverlap() has not been implemented.');
-  }
-
-  Future<void> setSymbolIconIgnorePlacement(bool enable) async {
-    throw UnimplementedError('setSymbolIconIgnorePlacement() has not been implemented.');
-  }
-
-  Future<void> setSymbolTextAllowOverlap(bool enable) async {
-    throw UnimplementedError('setSymbolTextAllowOverlap() has not been implemented.');
-  }
-
-  Future<void> setSymbolTextIgnorePlacement(bool enable) async {
-    throw UnimplementedError('setSymbolTextIgnorePlacement() has not been implemented.');
-  }
-
-  Future<void> addImageSource(String imageSourceId, Uint8List bytes, LatLngQuad coordinates) async {
-    throw UnimplementedError('addImageSource() has not been implemented.');
-  }
-
-  Future<void> removeImageSource(String imageSourceId) async {
-    throw UnimplementedError('removeImageSource() has not been implemented.');
-  }
-
-  Future<void> addLayer(String imageLayerId, String imageSourceId) async {
-    throw UnimplementedError('addLayer() has not been implemented.');
-  }
-
-  Future<void> addLayerBelow(String imageLayerId, String imageSourceId, String belowLayerId) async {
-    throw UnimplementedError('addLayerBelow() has not been implemented.');
-  }
-
-  Future<void> removeLayer(String imageLayerId) async {
-    throw UnimplementedError('removeLayer() has not been implemented.');
-  }
-
-  Future<Point> toScreenLocation(LatLng latLng) async {
-    throw UnimplementedError('toScreenLocation() has not been implemented.');
-  }
-
-  Future<List<Point>> toScreenLocationBatch(Iterable<LatLng> latLngs) async {
-    throw UnimplementedError('toScreenLocationList() has not been implemented.');
-  }
-
-  Future<LatLng> toLatLng(Point screenLocation) async {
-    throw UnimplementedError('toLatLng() has not been implemented.');
-  }
-
-  Future<double> getMetersPerPixelAtLatitude(double latitude) async {
-    throw UnimplementedError('getMetersPerPixelAtLatitude() has not been implemented.');
-  }
-
-  // CUSTOM
-  Future<List<Symbol>> addNeoClusterSymbols(List<SymbolOptions> options, [List<Map>? data]) async {
-    throw UnimplementedError('addNeoClusterSymbols() has not been implemented.');
-  }
-
-  // CUSTOM
-  Future<void> updateNeoClusterSymbol(Symbol symbol, SymbolOptions changes) async {
-    throw UnimplementedError('updateNeoClusterSymbols() has not been implemented.');
-  }
-
-  // CUSTOM
-  Future<void> removeNeoClusterSymbols(Iterable<String> symbolsIds) async {
-    throw UnimplementedError('removeNeoClusterSymbols() has not been implemented.');
-  }
-
-  // CUSTOM
-  Future<void> updateNeoRanges(NeoRanges neoRanges) async {
-    throw UnimplementedError('updateNeoRanges() has not been implemented.');
-  }
-
-  // CUSTOM
-  Future<void> removeNeoRanges() async {
-    throw UnimplementedError('removeNeoRanges() has not been implemented.');
+    onMapClickPlatform.clear();
+    onMapLongClickPlatform.clear();
+    onAttributionClickPlatform.clear();
+    onCameraTrackingChangedPlatform.clear();
+    onCameraTrackingDismissedPlatform.clear();
+    onMapIdlePlatform.clear();
+    onUserLocationUpdatedPlatform.clear();
   }
 }

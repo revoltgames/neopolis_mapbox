@@ -34,17 +34,28 @@ export 'package:mapbox_gl_platform_interface/mapbox_gl_platform_interface.dart'
         MyLocationRenderMode,
         CompassViewPosition,
         AttributionButtonPosition,
+        Annotation,
         Circle,
         CircleOptions,
         Line,
         LineOptions,
         Fill,
         FillOptions,
-        NeoRanges, // Custom
-        NeoRangeOptions; // Custom;
+        SourceProperties,
+        RasterSourceProperties,
+        VectorSourceProperties,
+        RasterDemSourceProperties,
+        GeojsonSourceProperties,
+        VideoSourceProperties,
+        ImageSourceProperties;
 
 part 'src/controller.dart';
-part 'src/download_region_status.dart';
-part 'src/global.dart';
 part 'src/mapbox_map.dart';
+part 'src/global.dart';
 part 'src/offline_region.dart';
+part 'src/download_region_status.dart';
+part 'src/layer_expressions.dart';
+part 'src/layer_properties.dart';
+part 'src/color_tools.dart';
+part 'src/annotation_manager.dart';
+part 'src/util.dart';

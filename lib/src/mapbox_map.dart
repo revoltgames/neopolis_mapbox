@@ -24,6 +24,8 @@ class MapboxMap extends StatefulWidget {
     this.scrollGesturesEnabled = true,
     this.zoomGesturesEnabled = true,
     this.tiltGesturesEnabled = true,
+    this.doubleClickZoomEnabled,
+    this.dragEnabled = true,
     this.trackCameraPosition = false,
     this.myLocationEnabled = false,
     this.myLocationTrackingMode = MyLocationTrackingMode.None,
@@ -53,15 +55,20 @@ class MapboxMap extends StatefulWidget {
       AnnotationType.line,
       AnnotationType.circle,
     ],
-  })  : assert(annotationOrder.length == 4),
+  })  : assert(annotationOrder.length <= 4),
         assert(annotationConsumeTapEvents.length > 0),
         super(key: key);
 
-  /// Defined the layer order of annotations displayed on map
-  /// (must contain all annotation types, 4 items)
+  /// Defines the layer order of annotations displayed on map
+  ///
+  /// Any annotation type can only be contained once, so 0 to 4 types
+  ///
+  /// Note that setting this to be empty gives a big perfomance boost for
+  /// android. However if you do so annotations will not work.
   final List<AnnotationType> annotationOrder;
 
-  /// Defined the layer order of click annotations
+  /// Defines the layer order of click annotations
+  ///
   /// (must contain at least 1 annotation type, 4 items max)
   final List<AnnotationType> annotationConsumeTapEvents;
 
@@ -84,6 +91,12 @@ class MapboxMap extends StatefulWidget {
 
   /// True if the map should show a compass when rotated.
   final bool compassEnabled;
+
+  /// True if drag functionality should be enabled.
+  ///
+  /// Disable to avoid performance issues that from the drag event listeners.
+  /// Biggest impact in android
+  final bool dragEnabled;
 
   /// Geographical bounding box for the camera target.
   final CameraTargetBounds cameraTargetBounds;
@@ -109,6 +122,12 @@ class MapboxMap extends StatefulWidget {
 
   /// True if the map view should respond to tilt gestures.
   final bool tiltGesturesEnabled;
+
+  /// Set to true to forcefully disable/enable if map should respond to double
+  /// click to zoom.
+  ///
+  /// This takes presedence over zoomGesturesEnabled. Only supported for web.
+  final bool? doubleClickZoomEnabled;
 
   /// True if you want to be notified of map camera movements by the MapboxMapController. Default is false.
   ///
@@ -208,25 +227,26 @@ class MapboxMap extends StatefulWidget {
 }
 
 class _MapboxMapState extends State<MapboxMap> {
-  final Completer<MapboxMapController> _controller = Completer<MapboxMapController>();
+  final Completer<MapboxMapController> _controller =
+      Completer<MapboxMapController>();
 
   late _MapboxMapOptions _mapboxMapOptions;
   final MapboxGlPlatform _mapboxGlPlatform = MapboxGlPlatform.createInstance();
 
   @override
   Widget build(BuildContext context) {
-    final List<String> annotationOrder = widget.annotationOrder.map((e) => e.toString()).toList();
-    final List<String> annotationConsumeTapEvents = widget.annotationConsumeTapEvents.map((e) => e.toString()).toList();
-
+    assert(
+        widget.annotationOrder.toSet().length == widget.annotationOrder.length,
+        "annotationOrder must not have duplicate types");
     final Map<String, dynamic> creationParams = <String, dynamic>{
       'initialCameraPosition': widget.initialCameraPosition.toMap(),
       'options': _MapboxMapOptions.fromWidget(widget).toMap(),
       'accessToken': widget.accessToken,
-      'annotationOrder': annotationOrder,
-      'annotationConsumeTapEvents': annotationConsumeTapEvents,
       'onAttributionClickOverride': widget.onAttributionClick != null,
+      'dragEnabled': widget.dragEnabled
     };
-    return _mapboxGlPlatform.buildView(creationParams, onPlatformViewCreated, widget.gestureRecognizers);
+    return _mapboxGlPlatform.buildView(
+        creationParams, onPlatformViewCreated, widget.gestureRecognizers);
   }
 
   @override
@@ -236,10 +256,20 @@ class _MapboxMapState extends State<MapboxMap> {
   }
 
   @override
+  void dispose() async {
+    super.dispose();
+    if (_controller.isCompleted) {
+      final controller = await _controller.future;
+      controller.dispose();
+    }
+  }
+
+  @override
   void didUpdateWidget(MapboxMap oldWidget) {
     super.didUpdateWidget(oldWidget);
     final _MapboxMapOptions newOptions = _MapboxMapOptions.fromWidget(widget);
-    final Map<String, dynamic> updates = _mapboxMapOptions.updatesMap(newOptions);
+    final Map<String, dynamic> updates =
+        _mapboxMapOptions.updatesMap(newOptions);
     _updateOptions(updates);
     _mapboxMapOptions = newOptions;
   }
@@ -271,6 +301,8 @@ class _MapboxMapState extends State<MapboxMap> {
       onCameraTrackingChanged: widget.onCameraTrackingChanged,
       onCameraIdle: widget.onCameraIdle,
       onMapIdle: widget.onMapIdle,
+      annotationOrder: widget.annotationOrder,
+      annotationConsumeTapEvents: widget.annotationConsumeTapEvents,
     );
     await _mapboxGlPlatform.initPlatform(id);
     _controller.complete(controller);
@@ -290,11 +322,12 @@ class _MapboxMapOptions {
     this.cameraTargetBounds,
     this.styleString,
     this.minMaxZoomPreference,
-    this.rotateGesturesEnabled,
-    this.scrollGesturesEnabled,
-    this.tiltGesturesEnabled,
+    required this.rotateGesturesEnabled,
+    required this.scrollGesturesEnabled,
+    required this.tiltGesturesEnabled,
+    required this.zoomGesturesEnabled,
+    required this.doubleClickZoomEnabled,
     this.trackCameraPosition,
-    this.zoomGesturesEnabled,
     this.myLocationEnabled,
     this.myLocationTrackingMode,
     this.myLocationRenderMode,
@@ -316,6 +349,8 @@ class _MapboxMapOptions {
       tiltGesturesEnabled: map.tiltGesturesEnabled,
       trackCameraPosition: map.trackCameraPosition,
       zoomGesturesEnabled: map.zoomGesturesEnabled,
+      doubleClickZoomEnabled:
+          map.doubleClickZoomEnabled ?? map.zoomGesturesEnabled,
       myLocationEnabled: map.myLocationEnabled,
       myLocationTrackingMode: map.myLocationTrackingMode,
       myLocationRenderMode: map.myLocationRenderMode,
@@ -335,15 +370,17 @@ class _MapboxMapOptions {
 
   final MinMaxZoomPreference? minMaxZoomPreference;
 
-  final bool? rotateGesturesEnabled;
+  final bool rotateGesturesEnabled;
 
-  final bool? scrollGesturesEnabled;
+  final bool scrollGesturesEnabled;
 
-  final bool? tiltGesturesEnabled;
+  final bool tiltGesturesEnabled;
+
+  final bool zoomGesturesEnabled;
+
+  final bool doubleClickZoomEnabled;
 
   final bool? trackCameraPosition;
-
-  final bool? zoomGesturesEnabled;
 
   final bool? myLocationEnabled;
 
@@ -360,6 +397,14 @@ class _MapboxMapOptions {
   final AttributionButtonPosition? attributionButtonPosition;
 
   final Point? attributionButtonMargins;
+
+  final _gestureGroup = {
+    'rotateGesturesEnabled',
+    'scrollGesturesEnabled',
+    'tiltGesturesEnabled',
+    'zoomGesturesEnabled',
+    'doubleClickZoomEnabled'
+  };
 
   Map<String, dynamic> toMap() {
     final Map<String, dynamic> optionsMap = <String, dynamic>{};
@@ -382,10 +427,13 @@ class _MapboxMapOptions {
     addIfNonNull('cameraTargetBounds', cameraTargetBounds?.toJson());
     addIfNonNull('styleString', styleString);
     addIfNonNull('minMaxZoomPreference', minMaxZoomPreference?.toJson());
+
     addIfNonNull('rotateGesturesEnabled', rotateGesturesEnabled);
     addIfNonNull('scrollGesturesEnabled', scrollGesturesEnabled);
     addIfNonNull('tiltGesturesEnabled', tiltGesturesEnabled);
     addIfNonNull('zoomGesturesEnabled', zoomGesturesEnabled);
+    addIfNonNull('doubleClickZoomEnabled', doubleClickZoomEnabled);
+
     addIfNonNull('trackCameraPosition', trackCameraPosition);
     addIfNonNull('myLocationEnabled', myLocationEnabled);
     addIfNonNull('myLocationTrackingMode', myLocationTrackingMode?.index);
@@ -394,12 +442,29 @@ class _MapboxMapOptions {
     addIfNonNull('compassViewPosition', compassViewPosition?.index);
     addIfNonNull('compassViewMargins', pointToArray(compassViewMargins));
     addIfNonNull('attributionButtonPosition', attributionButtonPosition?.index);
-    addIfNonNull('attributionButtonMargins', pointToArray(attributionButtonMargins));
+    addIfNonNull(
+        'attributionButtonMargins', pointToArray(attributionButtonMargins));
     return optionsMap;
   }
 
   Map<String, dynamic> updatesMap(_MapboxMapOptions newOptions) {
     final Map<String, dynamic> prevOptionsMap = toMap();
-    return newOptions.toMap()..removeWhere((String key, dynamic value) => prevOptionsMap[key] == value);
+    final newOptionsMap = newOptions.toMap();
+
+    // if any gesture is updated also all other gestures have to the saved to
+    // the update
+
+    final gesturesRequireUpdate =
+        _gestureGroup.any((key) => newOptionsMap[key] != prevOptionsMap[key]);
+
+    return newOptionsMap
+      ..removeWhere((String key, dynamic value) {
+        if (_gestureGroup.contains(key)) return !gesturesRequireUpdate;
+        final oldValue = prevOptionsMap[key];
+        if (oldValue is List && value is List) {
+          return listEquals(oldValue, value);
+        }
+        return oldValue == value;
+      });
   }
 }
