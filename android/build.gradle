@@ -23,7 +23,7 @@ rootProject.allprojects {
             }
             credentials {
                 username = "mapbox"
-                password = 'sk.eyJ1IjoicmV2b2x0c3R1ZGlvIiwiYSI6ImNraXluY285bTQ1NnkzMXFqcm51emg0azUifQ.mVNCNojWmngoYtTwAdq4YA'
+                password = MAPBOX_DOWNLOADS_TOKEN
             }
         }
     }
