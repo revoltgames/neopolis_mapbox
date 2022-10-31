@@ -62,9 +62,9 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             target: self,
             action: #selector(handleMapTap(sender:))
         )
-        for recognizer in mapView.gestureRecognizers! where recognizer is UITapGestureRecognizer {
-            singleTap.require(toFail: recognizer)
-        }
+        
+        singleTap.delegate = self
+       
         mapView.addGestureRecognizer(singleTap)
 
         let longPress = UILongPressGestureRecognizer(
