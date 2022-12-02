@@ -91,6 +91,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+class FixedMapView extends MapView {
+  public FixedMapView(@NonNull Context context, @Nullable MapboxMapOptions options) {
+    super(context, options);
+  }
+
+  @Override
+  public boolean onTouchEvent(MotionEvent ev) {
+    try {
+      // HOTFIX(Roland): The next two lines will throw an Exception if the pointer index does not exist.
+      // In that case, we skip any gesture handling, and return true to prevent a crash
+      int pointerIndex = (ev.getAction() & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
+      ev.getPointerId(pointerIndex);
+
+      return super.onTouchEvent(ev);
+    } catch (Exception e) {
+      Log.e("MAPBOX", "Failed to handle touch event: " + e);
+      return true;
+    }
+  }
+}
+
 /**
  * Controller of a single MapboxMaps MapView instance.
  */
@@ -134,7 +155,6 @@ final class MapboxMapController
   private LocalizationPlugin localizationPlugin;
   private Style style;
   private Feature draggedFeature;
-  private AndroidGesturesManager androidGesturesManager;
   private LatLng dragOrigin;
   private LatLng dragPrevious;
   private LatLngBounds bounds = null;
@@ -172,14 +192,11 @@ final class MapboxMapController
     this.context = context;
     this.dragEnabled = dragEnabled;
     this.styleStringInitial = styleStringInitial;
-    this.mapView = new MapView(context, options);
+    this.mapView = new FixedMapView(context, options);
     this.interactiveFeatureLayerIds = new HashSet<>();
     this.addedFeaturesByLayer = new HashMap<String, FeatureCollection>();
     this.density = context.getResources().getDisplayMetrics().density;
     this.lifecycleProvider = lifecycleProvider;
-    if (dragEnabled) {
-      this.androidGesturesManager = new AndroidGesturesManager(this.mapView.getContext(), false);
-    }
     this.mSnapshotterMap = new HashMap<>();
     methodChannel = new MethodChannel(messenger, "plugins.flutter.io/mapbox_maps_" + id);
     methodChannel.setMethodCallHandler(this);
@@ -217,29 +234,6 @@ final class MapboxMapController
     mapboxMap.addOnCameraMoveStartedListener(this);
     mapboxMap.addOnCameraMoveListener(this);
     mapboxMap.addOnCameraIdleListener(this);
-
-    if (androidGesturesManager != null) {
-      androidGesturesManager.setMoveGestureListener(new MoveGestureListener());
-      mapView.setOnTouchListener(
-          new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-              try {
-                // HOTFIX(Roland): The next two lines will throw an Exception if the pointer index does not exist.
-                // In that case, we skip any gesture handling, and return true to prevent a crash
-                int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-                event.getPointerId(pointerIndex);
-
-                androidGesturesManager.onTouchEvent(event);
-                return draggedFeature != null;
-              } catch (Exception e) {
-                Log.e("MAPBOX", "Failed to handle touch event: " + e);
-                return true;
-              }
-            }
-          });
-    }
-
     mapView.addOnStyleImageMissingListener(
         (id) -> {
           DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
