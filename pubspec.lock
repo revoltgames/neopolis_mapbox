@@ -26,7 +26,7 @@ packages:
       path: mapbox_gl_platform_interface
       relative: true
     source: path
-    version: "0.16.3"
+    version: "0.16.5"
   material_color_utilities:
     dependency: transitive
     description:
