@@ -91,34 +91,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-
-class FixedMapView extends MapView {
-
-    public FixedMapView(@NonNull Context context, @Nullable MapboxMapOptions options) {
-        super(context, options);
-    }
-
-
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        // NOTE Neopolis fix - Fix crash on Android on multitap
-        try {
-            int action = ev.getAction() & MotionEvent.ACTION_MASK;
-            int pointerIndex = (ev.getAction() & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-            int pointerId = ev.getPointerId(pointerIndex);
-            performClick();
-            return super.onTouchEvent(ev);
-        } catch (IllegalArgumentException e) {
-            return true;
-        }
-    }
-
-    @Override
-    public boolean performClick() {
-        return super.performClick();
-    }
-}
-
 /**
  * Controller of a single MapboxMaps MapView instance.
  */
@@ -147,7 +119,7 @@ final class MapboxMapController
   private final Set<String> interactiveFeatureLayerIds;
   private final Map<String, FeatureCollection> addedFeaturesByLayer;
   private final Map<String, MapSnapshotter> mSnapshotterMap;
-  private FixedMapView mapView;
+  private MapView mapView;
   private MapboxMap mapboxMap;
   private boolean trackCameraPosition = false;
   private boolean myLocationEnabled = false;
@@ -200,7 +172,7 @@ final class MapboxMapController
     this.context = context;
     this.dragEnabled = dragEnabled;
     this.styleStringInitial = styleStringInitial;
-    this.mapView = new FixedMapView(context, options);
+    this.mapView = new MapView(context, options);
     this.interactiveFeatureLayerIds = new HashSet<>();
     this.addedFeaturesByLayer = new HashMap<String, FeatureCollection>();
     this.density = context.getResources().getDisplayMetrics().density;
@@ -252,9 +224,18 @@ final class MapboxMapController
           new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-              androidGesturesManager.onTouchEvent(event);
+              try {
+                // HOTFIX(Roland): The next two lines will throw an Exception if the pointer index does not exist.
+                // In that case, we skip any gesture handling, and return true to prevent a crash
+                int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
+                event.getPointerId(pointerIndex);
 
-              return draggedFeature != null;
+                androidGesturesManager.onTouchEvent(event);
+                return draggedFeature != null;
+              } catch (Exception e) {
+                Log.e("MAPBOX", "Failed to handle touch event: " + e);
+                return true;
+              }
             }
           });
     }
