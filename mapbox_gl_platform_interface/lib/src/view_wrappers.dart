@@ -52,19 +52,6 @@ class TextureAndroidViewControllerWrapper
   // @override
   Future<void> clearFocus() => _controller.clearFocus();
 
-  /// Beginning with flutter 3, [_controller.create] with [size] should be called.
-  ///
-  /// size is the view's initial size in logical pixel. size can be omitted
-  /// if the concrete implementation doesn't require an initial size to create
-  /// the platform view.
-  Future<void> create({Size? size}) async {
-    await _controller.create();
-    awaitingCreation = false;
-    if (size != null) {
-      await _controller.setSize(size);
-    }
-  }
-
   /// Beginning with flutter 3, [_controller.createdCallbacks] should be called.
   ///
   /// This is for testing purposes only and is not relevant for production code.
@@ -123,6 +110,18 @@ class TextureAndroidViewControllerWrapper
 
   // @override
   int get viewId => _controller.viewId;
+
+  @override
+  bool get requiresViewComposition => throw UnimplementedError();
+
+  @override
+  Future<void> create({Size? size, Offset? position}) async {
+    await _controller.create();
+    awaitingCreation = false;
+    if (size != null) {
+      await _controller.setSize(size);
+    }
+  }
 }
 
 class AndroidViewWithWrappedController extends StatefulWidget {
