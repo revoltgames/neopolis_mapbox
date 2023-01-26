@@ -112,9 +112,6 @@ class TextureAndroidViewControllerWrapper
   int get viewId => _controller.viewId;
 
   @override
-  bool get requiresViewComposition => throw UnimplementedError();
-
-  @override
   Future<void> create({Size? size, Offset? position}) async {
     await _controller.create();
     awaitingCreation = false;
@@ -122,6 +119,9 @@ class TextureAndroidViewControllerWrapper
       await _controller.setSize(size);
     }
   }
+
+  @override
+  bool get requiresViewComposition => _controller.requiresViewComposition;
 }
 
 class AndroidViewWithWrappedController extends StatefulWidget {
