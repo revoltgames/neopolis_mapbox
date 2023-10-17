@@ -24,4 +24,3 @@ part 'src/snapshot.dart';
 part 'src/source_properties.dart';
 part 'src/symbol.dart';
 part 'src/ui.dart';
-part 'src/view_wrappers.dart';
