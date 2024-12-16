@@ -98,11 +98,10 @@ class CameraTargetBounds {
   dynamic toJson() => <dynamic>[bounds?.toList()];
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (runtimeType != other.runtimeType) return false;
-    final CameraTargetBounds typedOther = other;
-    return bounds == typedOther.bounds;
+    if (other is! CameraTargetBounds) return false; // Safe type check
+    return bounds == other.bounds;
   }
 
   @override
@@ -135,15 +134,14 @@ class MinMaxZoomPreference {
   dynamic toJson() => <dynamic>[minZoom, maxZoom];
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (runtimeType != other.runtimeType) return false;
-    final MinMaxZoomPreference typedOther = other;
-    return minZoom == typedOther.minZoom && maxZoom == typedOther.maxZoom;
+    if (other is! MinMaxZoomPreference) return false; // Safe type check
+    return minZoom == other.minZoom && maxZoom == other.maxZoom;
   }
 
   @override
-  int get hashCode => hashValues(minZoom, maxZoom);
+  int get hashCode => Object.hash(minZoom, maxZoom);
 
   @override
   String toString() {

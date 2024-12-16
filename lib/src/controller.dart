@@ -126,7 +126,6 @@ class MapboxMapController extends ChangeNotifier {
             symbolManager = SymbolManager(this,
                 onTap: onSymbolTapped, enableInteraction: enableInteraction);
             break;
-          default:
         }
       }
       if (onStyleLoadedCallback != null) {

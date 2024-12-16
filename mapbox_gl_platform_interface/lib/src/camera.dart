@@ -69,18 +69,17 @@ class CameraPosition {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (runtimeType != other.runtimeType) return false;
-    final CameraPosition typedOther = other;
-    return bearing == typedOther.bearing &&
-        target == typedOther.target &&
-        tilt == typedOther.tilt &&
-        zoom == typedOther.zoom;
+    if (other is! CameraPosition) return false; // Safe type check
+    return bearing == other.bearing &&
+        target == other.target &&
+        tilt == other.tilt &&
+        zoom == other.zoom;
   }
 
   @override
-  int get hashCode => hashValues(bearing, target, tilt, zoom);
+  int get hashCode => Object.hash(target, zoom, bearing, tilt);
 
   @override
   String toString() =>
